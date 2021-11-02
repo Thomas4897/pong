@@ -9,6 +9,12 @@ const PADDLE_WIDTH = 20;
 //! Size of the ball (in px)
 const BALL_SIZE = 20;
 
+const playerScore = document.querySelector(".player-score");
+playerScore.innerText = 0;
+
+const computerScore = document.querySelector(".computer-score");
+computerScore.innerText = 0;
+
 //! Get the computer paddle element
 const computerPaddle = document.querySelector(".computer-paddle");
 const playerPaddle = document.querySelector(".player-paddle");
@@ -32,8 +38,8 @@ const ball = document.querySelector(".ball");
 let ballPositionY = 250;
 let ballPositionX = 350;
 
-let ballVelocityY = 3;
-let ballVelocityX = 20;
+let ballVelocityY = 1;
+let ballVelocityX = 10;
 let lastBallVelocityX = ballVelocityX;
 let lastBallVelocityY = ballVelocityY;
 
@@ -46,8 +52,14 @@ ball.style.top = "250px";
 function update() {
 	ballMovment();
 	paddleCollision();
-	playerPaddlePosition();
+	PaddlePositions();
 }
+
+document.addEventListener("keydown", function (event) {
+	if (event.key === " ") {
+		setInterval(update, 35);
+	}
+});
 
 //! Player paddle movement listener
 document.addEventListener("keydown", function (event) {
@@ -88,9 +100,29 @@ document.addEventListener("keydown", function (event) {
 	}
 });
 
-setInterval(update, 35);
-//! paddle player-paddle
-//! paddle computer-paddle
+//! Auto movement for computer
+function PaddlePositions() {
+	//* Update the player's paddle's position
+	playerPaddlePositionY = playerPaddlePositionY;
+	//* Apply the y-position
+	playerPaddle.style.top = `${playerPaddlePositionY}px`;
+
+	//* Update the computer paddle's position
+	computerPaddlePositionY = ballPositionY / 1.3;
+
+	//* Keeps the computer paddle position more than 0
+	if (computerPaddlePositionY <= 0) {
+		computerPaddlePositionY = computerPaddlePositionY + movePaddle;
+	}
+
+	//* Keeps the computer paddle position less than 500
+	if (computerPaddlePositionY >= GAME_AREA_HEIGHT - PADDLE_HEIGHT) {
+		computerPaddlePositionY = GAME_AREA_HEIGHT - PADDLE_HEIGHT;
+	}
+
+	//* Apply the y-position
+	computerPaddle.style.top = `${computerPaddlePositionY}px`;
+}
 
 function ballMovment() {
 	//! Add px velocity movement to the ball on y axis
@@ -105,81 +137,75 @@ function ballMovment() {
 	//? If the ball position is 0 or less bounce the other direction
 	if (ballPositionX <= 0) {
 		console.log("ball hit left");
-		ballVelocityX = -Math.abs(ballVelocityX) - 0.5;
+		//* computer gains point
+		computerScore.innerText = Number(computerScore.innerText) + 1;
 
-		//? If the ball hits the left side and Y is 0 or less bounce the oppiste direction of up or down
-		if (ballVelocityY >= 0) {
-			ballVelocityY = Math.abs(ballVelocityY) + 0.5;
-		} else {
-			ballVelocityY = -Math.abs(ballVelocityY) - 0.5;
-		}
+		reset();
+
+		ballVelocityX = velocityZero;
+		ballVelocityY = velocityZero;
 	}
 
 	//! RightSide:
 	//? If the ball position is 680 or more bounce the other direction
 	if (ballPositionX >= 680) {
 		console.log("ball hit right");
-		ballVelocityX = Math.abs(ballVelocityX) + 0.5;
+		//* Player gains point
+		playerScore.innerText = Number(playerScore.innerText) + 1;
 
-		//? If the ball hits the right side and Y is 0 or less bounce the oppiste direction of up or down
-		if (ballVelocityY >= 0) {
-			ballVelocityY = Math.abs(ballVelocityY) + 0.5;
-		} else {
-			ballVelocityY = -Math.abs(ballVelocityY) - 0.5;
-		}
+		reset();
+
+		ballVelocityX = velocityZero;
+		ballVelocityY = velocityZero;
 	}
 
-	//? Top:
-	//!If the ball hits the top of the screen, bounce down
+	//! Top:
+	//? If the ball hits the top of the screen, bounce down
 	if (ballPositionY <= 0) {
 		console.log("ball hit bottom");
-		ballVelocityY = -Math.abs(ballVelocityY) - 0.5;
+		ballVelocityY = -Math.abs(ballVelocityY) - 0.1;
 	}
 
-	//? Bottom:
-	//! If the ball hits the bottom of the screen, bounce up
+	//! Bottom:
+	//? If the ball hits the bottom of the screen, bounce up
 	if (ballPositionY >= 480) {
 		console.log("ball hit bottom");
-		ballVelocityY = Math.abs(ballVelocityY) + 0.5;
+		ballVelocityY = Math.abs(ballVelocityY) + 0.1;
 	}
 }
 
 function paddleCollision() {
 	//! Paddle collision
 	if (
-		(ballPositionY + BALL_SIZE >= playerPaddlePositionY && // Lower than the top of the platform
-			ballPositionY <= playerPaddlePositionY + PADDLE_HEIGHT && // Higher than the bottom of the platform
-			ballPositionX + BALL_SIZE >= playerPaddlePositionX && // To the right of the platform's right side
-			ballPositionX <= playerPaddlePositionX + PADDLE_WIDTH) || // To the left of the platform's left side
-		(ballPositionY + BALL_SIZE >= computerPaddlePositionY && // Lower than the top of the platform
-			ballPositionY <= computerPaddlePositionY + PADDLE_HEIGHT && // Higher than the bottom of the platform
-			ballPositionX + BALL_SIZE >= computerPaddlePositionX && // To the right of the platform's right side
-			ballPositionX <= computerPaddlePositionX) // To the left of the platform's left side
+		ballPositionY + BALL_SIZE >= playerPaddlePositionY && // Lower than the top of the platform
+		ballPositionY <= playerPaddlePositionY + PADDLE_HEIGHT && // Higher than the bottom of the platform
+		ballPositionX + BALL_SIZE >= playerPaddlePositionX && // To the right of the platform's right side
+		ballPositionX <= playerPaddlePositionX + PADDLE_WIDTH // To the left of the platform's left side
 	) {
-		ballVelocityX = ballVelocityX * -1;
+		ballVelocityX = -Math.abs(ballVelocityX) - 0.1;
 		// ballVelocityY = ballVelocityY * -1;
+	}
+
+	if (
+		ballPositionY + BALL_SIZE >= computerPaddlePositionY && // Lower than the top of the platform
+		ballPositionY <= computerPaddlePositionY + PADDLE_HEIGHT && // Higher than the bottom of the platform
+		ballPositionX + BALL_SIZE >= computerPaddlePositionX && // To the right of the platform's right side
+		ballPositionX <= computerPaddlePositionX
+	) {
+		// To the left of the platform's left side
+		ballVelocityX = Math.abs(ballVelocityX) + 0.1;
 	}
 }
 
-function playerPaddlePosition() {
-	//! Update the player's paddle's position
-	playerPaddlePositionY = playerPaddlePositionY;
-	//! Apply the y-position
-	playerPaddle.style.top = `${playerPaddlePositionY}px`;
-
-	//! Update the computer paddle's position
-	computerPaddlePositionY = ballPositionY;
-
-	//* Keeps the computer paddle position more than 0
-	if (computerPaddlePositionY <= 0) {
-		computerPaddlePositionY = computerPaddlePositionY + movePaddle;
-	}
-
-	//* Keeps the computer paddle position less than 500
-	if (computerPaddlePositionY >= GAME_AREA_HEIGHT - PADDLE_HEIGHT) {
-		computerPaddlePositionY = GAME_AREA_HEIGHT - PADDLE_HEIGHT;
-	}
-
-	//! Apply the y-position
-	computerPaddle.style.top = `${computerPaddlePositionY}px`;
+function reset() {
+	computerPaddlePositionY = 200;
+	computerPaddlePositionX = 680;
+	playerPaddlePositionY = 200;
+	playerPaddlePositionX = 0;
+	ballPositionY = 250;
+	ballPositionX = 350;
+	ballVelocityY = 1;
+	ballVelocityX = 10;
+	lastBallVelocityX = ballVelocityX;
+	lastBallVelocityY = ballVelocityY;
 }
