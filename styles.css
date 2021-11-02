@@ -27,7 +27,7 @@ body {
 .paddle {
 	width: 20px;
 	height: 100px;
-	top: 100px;
+	top: 0px;
 	position: absolute;
 	background-color: black;
 }
