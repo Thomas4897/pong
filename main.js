@@ -117,7 +117,7 @@ function PaddlePositions() {
 	playerPaddle.style.top = `${playerPaddlePositionY}px`;
 	let hit = coinFlip();
 	console.log(hit);
-	if (hit > 7) {
+	if (hit > 3) {
 		//* Update the computer paddle's position
 		computerPaddlePositionY = ballPositionY / 2;
 	} else {
